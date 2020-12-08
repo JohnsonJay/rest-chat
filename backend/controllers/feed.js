@@ -25,11 +25,19 @@ exports.createPost = (req, res, next) => {
     error.statusCode = 422;
     throw error;
   }
+
+  if (!req.file) {
+      const error = new Error('No image provided.');
+      error.statusCode = 422;
+      throw error;
+  }
+
+  const imageUrl = req.file.path.replace("\\" ,"/");
   const { title, content } = req.body;
   const post = new Post({
     title,
     content,
-    imageUrl: 'images/chopped-kiwi-in-a-bowl-on-a-table.jpg',
+    imageUrl: imageUrl,
     creator: {
       name: 'John'
     }
@@ -74,3 +82,9 @@ exports.getPost = (req, res, next) => {
         next(err);
       })
 }
+
+/*
+exports.updatePost = (req, res, next) => {
+...
+    imageUrl = req.file.path.replace("\\","/");
+}*/
