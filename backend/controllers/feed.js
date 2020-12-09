@@ -3,6 +3,7 @@ const fs = require('fs');
 const path = require('path');
 
 const Post = require('../models/post');
+const User = require('../models/user');
 
 exports.getPosts = (req, res, next) => {
   const currentPage = req.query.page || 1;
@@ -48,21 +49,29 @@ exports.createPost = (req, res, next) => {
 
   const imageUrl = req.file.path.replace("\\" ,"/");
   const { title, content } = req.body;
+  let creator;
   const post = new Post({
     title,
     content,
     imageUrl: imageUrl,
-    creator: {
-      name: 'John'
-    }
+    creator: req.userId
   });
   post.save()
-      .then(result => {
-        console.log(result);
-        res.status(201).json({
-          message: 'Post created successfully!',
-          post: result
-        });
+      .then(() => User.findById(req.userId))
+      .then(user => {
+        creator = user;
+        user.posts.push(post);
+        return user.save();
+      })
+      .then(() => {
+          res.status(201).json({
+              message: 'Post created successfully!',
+              post: post,
+              creator: {
+                  _id: creator._id,
+                  name: creator.name
+              }
+          });
       })
       .catch(err => {
         if (!err.statusCode) {
@@ -125,6 +134,12 @@ exports.updatePost = (req, res, next) => {
             if (!post) {
                 const error = new Error('Could not find post.');
                 error.statusCode = 404;
+                throw error;
+            }
+
+            if (post.creator.toString() !== req.userId) {
+                const error = new Error('Not authorized');
+                error.statusCode = 403;
                 throw error;
             }
 

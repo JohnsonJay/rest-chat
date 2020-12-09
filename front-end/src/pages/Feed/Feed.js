@@ -262,7 +262,8 @@ class Feed extends Component {
               lastPage={Math.ceil(this.state.totalPosts / 2)}
               currentPage={this.state.postPage}
             >
-              {this.state.posts.map(post => (
+              {
+                this.state.posts.map(post => (
                 <Post
                   key={post._id}
                   id={post._id}
