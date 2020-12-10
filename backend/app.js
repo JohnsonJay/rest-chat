@@ -55,7 +55,8 @@ app.use('/auth', authRoutes);
 
 app.use('/graphql', graphqlHTTP({
     schema: graphqlSchema,
-    rootValue: graphqlResolver
+    rootValue: graphqlResolver,
+    graphiql: true
 }));
 
 app.use((error, req, res, next) => {
